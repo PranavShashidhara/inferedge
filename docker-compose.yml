@@ -1,0 +1,39 @@
+services:
+  inference-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: llm-inference-engine:jetson-sm87
+    container_name: llm_inference
+
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - CUDA_VISIBLE_DEVICES=0
+      - TORCH_CUDA_ARCH_LIST=8.7
+      - CUDAARCHS=87
+
+    volumes:
+      - ./kernels:/workspace/kernels
+      - ./runtime:/workspace/runtime
+      - ./memory:/workspace/memory
+      - ./benchmarks:/workspace/benchmarks
+      - ./profiling:/workspace/profiling
+      - ./results:/workspace/results
+      - model-weights:/root/.cache/huggingface
+
+    working_dir: /workspace
+
+    # SYS_ADMIN needed for Nsight Compute hardware counters
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - seccomp:unconfined
+
+    stdin_open: true
+    tty: true
+
+volumes:
+  model-weights:
+    driver: local
