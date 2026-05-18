@@ -23,15 +23,7 @@ import numpy as np
 # ---------------------------------------------------------------------------
 
 class RooflineAnalyzer:
-    """
-    Parameters
-    ----------
-    peak_flops_tflops : hardware peak throughput in TFLOPS
-                        (e.g. Jetson Orin Nano FP16 ≈ 1.4 TFLOPS)
-    peak_bw_gbps      : memory bandwidth ceiling in GB/s
-                        (e.g. LPDDR5 on Orin Nano ≈ 51.2 GB/s)
-    """
-
+    
     def __init__(
         self,
         peak_flops_tflops: float = 1.4,

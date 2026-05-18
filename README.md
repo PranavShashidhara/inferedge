@@ -4,8 +4,6 @@
 
 > Platform: **Google Colab** · Hardware: **NVIDIA A100** (312 TFLOPS FP16 · 2 TB/s HBM2e)
 
----
-
 ## Overview
 
 This project implements a production-grade LLM inference engine running on Google Colab with an NVIDIA A100 GPU. It wraps a HuggingFace causal language model with a **paged KV-cache memory manager**, a **dynamic batching scheduler** that separates prefill and decode workloads, and a full **benchmarking + roofline analysis suite** to characterise performance bottlenecks.
@@ -16,8 +14,6 @@ The engine targets `facebook/opt-1.3b` (or any 1B–3B HF model) running in FP16
 - Batching decode steps across requests to amortise memory-bandwidth cost
 - Prioritising shorter sequences to reduce head-of-line blocking
 - Prefix-sharing via ref-counted block tables to eliminate redundant KV computation
-
----
 
 ## Project Structure
 
@@ -41,7 +37,6 @@ The engine targets `facebook/opt-1.3b` (or any 1B–3B HF model) running in FP16
     └── plots/                 # Saved figures
 ```
 
----
 
 ## Module Descriptions
 
@@ -68,7 +63,6 @@ A low-level free-list block allocator with **reference-counted blocks** to suppo
 ### `memory/kv_manager.py`
 Higher-level KV-cache pool manager built on top of `BlockAllocator`. Handles sequence allocation, token append, eviction, and copying finalised `past_key_values` tensors from HuggingFace back into the paged pool. Tracks peak memory usage and exposes diagnostic stats.
 
----
 
 ## Results
 
@@ -88,7 +82,6 @@ Three-panel figure produced by `benchmarks/latency_test.py`:
 
 Sweep configuration: `seq_lengths=[128, 256, 512, 1024]`, `batch_sizes=[1, 2, 4, 8]`, 5 timed trials + 2 warm-up runs per cell, 32 new tokens per trial. OOM-safe: failed configs are recorded as NaN rather than crashing the sweep.
 
----
 
 ### Throughput Benchmark
 
@@ -104,8 +97,6 @@ Two-panel figure produced by `benchmarks/throughput_test.py`:
 | **Batch Latency (ms)** | Mean latency per `generate_batch()` call with error bars showing the spread to p99. Captures the latency cost of larger batches even as throughput improves. |
 
 The throughput test re-uses the same prompt set throughout the window (no construction overhead), and calls `torch.cuda.synchronize()` after each batch to ensure accurate wall-clock measurement.
-
----
 
 ### Roofline Analysis
 
@@ -126,8 +117,6 @@ The roofline model characterises each kernel as **memory-bound** or **compute-bo
 Each point on the plot represents one decode step or the prefill pass, with **arithmetic intensity** (FLOP/byte) on the x-axis and **attained performance** (GFLOP/s) on the y-axis. Points below the roofline ceiling indicate unrealised potential; the mean roofline attainment percentage is annotated in the lower left.
 
 **Key insight:** Single-batch decode steps land firmly in the memory-bound regime (low arithmetic intensity, dominated by KV-cache reads). Larger batches shift points rightward toward the ridge, which is why batching is the primary lever for throughput on memory-bandwidth-limited hardware — even on the A100's 2 TB/s HBM2e.
-
----
 
 ## Quickstart
 
@@ -173,8 +162,6 @@ analyzer.summary(decoder.get_last_kernel_stats())
 ```
 
 See `llm_inference_engine.ipynb` for the full end-to-end walkthrough including KV-cache diagnostics.
-
----
 
 ## Key Design Decisions
 
